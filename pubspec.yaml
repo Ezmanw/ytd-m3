@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Google Fonts (Google Sans) fetched at runtime — no bundled font assets.
-  google_fonts: ^6.2.1
+  google_fonts: ^8.2.1
   # Lightweight state management (ChangeNotifier-based, standard M3 apps).
   provider: ^6.1.2
   # Persist theme, server list, and legal-warning preference.

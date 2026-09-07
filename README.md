@@ -26,12 +26,10 @@ it to a real backend is future work.
 - **Material 3 only.** Every screen is built from stock Flutter Material 3
   widgets (`NavigationRail`, `Card`, `SegmentedButton`, etc.) and Material
   Icons — no custom-drawn graphics or bundled image assets.
-- **Typography.** The brief called for Google Sans globally, but Google Sans
-  is a proprietary Google product font that isn't published on Google Fonts,
-  so `google_fonts` has nothing to fetch for it. [`lib/theme/app_theme.dart`](lib/theme/app_theme.dart)
-  uses **Roboto** instead — Google's own open-source Material typeface — as
-  the closest properly licensed stand-in. Swap `GoogleFonts.robotoTextTheme`
-  there if a licensed Google Sans font file ever becomes available.
+- **Typography.** Google Sans is set globally via `GoogleFonts.googleSansTextTheme`
+  in [`lib/theme/app_theme.dart`](lib/theme/app_theme.dart) (requires
+  `google_fonts` ^8.2.1 or later — older releases predate Google Sans being
+  published on Google Fonts).
 - **Theme customizer.** Settings → Appearance lets you pick a Material seed
   color (feeds `ColorScheme.fromSeed`) and switch light/dark/system mode.
 

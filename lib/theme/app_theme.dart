@@ -33,16 +33,11 @@ ThemeData buildAppTheme({required Color seedColor, required Brightness brightnes
     colorScheme: colorScheme,
   );
 
-  // "Google Sans" itself is a proprietary Google product font and is not
-  // published on Google Fonts, so google_fonts has no matching family to
-  // fetch. Roboto is Google's own open-source Material typeface and the
-  // closest faithful, properly-licensed stand-in — swap this call if a
-  // licensed Google Sans font file ever becomes available to the project.
-  final googleSansTextTheme = GoogleFonts.robotoTextTheme(base.textTheme);
+  final googleSansTextTheme = GoogleFonts.googleSansTextTheme(base.textTheme);
 
   return base.copyWith(
     textTheme: googleSansTextTheme,
-    primaryTextTheme: GoogleFonts.robotoTextTheme(base.primaryTextTheme),
+    primaryTextTheme: GoogleFonts.googleSansTextTheme(base.primaryTextTheme),
     navigationRailTheme: NavigationRailThemeData(
       backgroundColor: colorScheme.surface,
       selectedIconTheme: IconThemeData(color: colorScheme.primary),
