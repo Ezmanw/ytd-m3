@@ -80,7 +80,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION=$(grep -m1 '^version:' pubspec.yaml | sed 's/version: *//' | cut -d'+' -f1)
-          BUNDLE=build/linux/x64/release/bundle
+          BUNDLE=$(ls -d build/linux/*/release/bundle | head -1)
           STAGE=$(mktemp -d)
           mkdir -p "$STAGE/opt/ytd-m3" "$STAGE/usr/bin" "$STAGE/usr/share/applications"
           cp -r "$BUNDLE"/. "$STAGE/opt/ytd-m3/"
@@ -110,7 +110,7 @@ jobs:
         with:
           name: ytd-m3-${{ matrix.platform }}-${{ matrix.arch }}-bundle
           path: |
-            build/linux/x64/release/bundle
+            build/linux/*/release/bundle
             build/macos/Build/Products/Release/ytd_m3.app
             build/windows/x64/runner/Release
           if-no-files-found: ignore
