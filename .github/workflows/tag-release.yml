@@ -1,0 +1,38 @@
+name: Tag release
+
+# Creates and pushes a git tag using the workflow's own GITHUB_TOKEN, which
+# has full repo write access — unlike some external push credentials, it can
+# create tag refs. Pushing the resulting `v*` tag triggers the `release` job
+# in build.yml, which attaches every platform build to a GitHub Release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to create and push (e.g. v1.0.0)'
+        required: true
+        default: v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create and push tag
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git rev-parse "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists, nothing to do."
+            exit 0
+          fi
+          git tag -a "$TAG" -m "$TAG"
+          git push origin "refs/tags/$TAG"
