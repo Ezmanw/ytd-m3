@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/server_profile.dart';
+import '../services/platform_support.dart';
 import '../state/settings_controller.dart';
 import '../widgets/color_seed_picker.dart';
 import '../widgets/legal_warning_dialog.dart';
 import '../widgets/server_dialog.dart';
+import 'servers_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -49,24 +50,51 @@ class SettingsScreen extends StatelessWidget {
           _SectionCard(
             title: 'Servers',
             children: [
-              const Text(
-                'Turn this computer into a download server so other devices on '
-                'your network can connect to it, or add it as your own local '
-                'server for this app.',
+              Text(
+                settings.isDirectMode
+                    ? (supportsDirectMode
+                        ? 'Currently running Direct — this computer, no server needed.'
+                        : 'No server added yet.')
+                    : 'Currently connected to "${settings.activeServer!.name}".',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                supportsDirectMode
+                    ? 'A server is entirely optional — this app works on its own with '
+                        'no setup. Only add one if you want to download through another '
+                        'machine, like your own remote box or a friend\'s server.'
+                    : 'This build only downloads through a remote server — add your '
+                        'own box, or one a friend is hosting for you.',
               ),
               const SizedBox(height: 12),
-              FilledButton.tonalIcon(
-                onPressed: () async {
-                  final profile = await ServerDialog.show(
-                    context,
-                    initialKind: ServerKind.local,
-                  );
-                  if (profile != null && context.mounted) {
-                    await context.read<SettingsController>().upsertServer(profile);
-                  }
-                },
-                icon: const Icon(Icons.dns),
-                label: const Text('Set up a server on this computer'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FilledButton.tonalIcon(
+                    onPressed: () async {
+                      final profile = await ServerDialog.show(context);
+                      if (profile != null && context.mounted) {
+                        await context.read<SettingsController>().upsertServer(profile);
+                        if (context.mounted) {
+                          await context.read<SettingsController>().setActiveServer(profile.id);
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.dns),
+                    label: const Text('Add a remote server'),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ServersScreen()),
+                    ),
+                    icon: const Icon(Icons.list),
+                    label: const Text('Manage servers'),
+                  ),
+                ],
               ),
             ],
           ),

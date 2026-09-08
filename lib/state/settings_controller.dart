@@ -37,6 +37,9 @@ class SettingsController extends ChangeNotifier {
   List<ServerProfile> get servers => List.unmodifiable(_servers);
   String? get activeServerId => _activeServerId;
 
+  /// The selected remote server, or null when running in Direct mode (this
+  /// computer, no server — the default, and a fully supported way to use
+  /// the app on its own).
   ServerProfile? get activeServer {
     if (_activeServerId == null) return null;
     for (final server in _servers) {
@@ -44,6 +47,8 @@ class SettingsController extends ChangeNotifier {
     }
     return null;
   }
+
+  bool get isDirectMode => _activeServerId == null;
 
   void _restore() {
     final storedColor = _prefs.getInt(_keySeedColor);
@@ -97,7 +102,6 @@ class SettingsController extends ChangeNotifier {
     } else {
       _servers = [..._servers]..[index] = server;
     }
-    _activeServerId ??= server.id;
     notifyListeners();
     await _persistServers();
   }
@@ -105,8 +109,8 @@ class SettingsController extends ChangeNotifier {
   Future<void> removeServer(String id) async {
     _servers = _servers.where((s) => s.id != id).toList();
     if (_activeServerId == id) {
-      _activeServerId = _servers.isEmpty ? null : _servers.first.id;
-      await _prefs.setString(_keyActiveServerId, _activeServerId ?? '');
+      _activeServerId = null;
+      await _prefs.remove(_keyActiveServerId);
     }
     notifyListeners();
     await _persistServers();
@@ -116,6 +120,13 @@ class SettingsController extends ChangeNotifier {
     _activeServerId = id;
     notifyListeners();
     await _prefs.setString(_keyActiveServerId, id);
+  }
+
+  /// Switches back to Direct mode (this computer, no server).
+  Future<void> useDirectMode() async {
+    _activeServerId = null;
+    notifyListeners();
+    await _prefs.remove(_keyActiveServerId);
   }
 
   Future<void> _persistServers() async {

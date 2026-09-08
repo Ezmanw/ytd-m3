@@ -2,22 +2,18 @@ import 'package:flutter/material.dart';
 
 import '../models/server_profile.dart';
 
-/// Add or edit a [ServerProfile] — either a server running on this machine,
-/// or a remote server (yours, or one a friend is hosting for you).
+/// Add or edit a remote [ServerProfile] — your own box on the network, or
+/// one a friend is hosting for you. This computer itself never needs one of
+/// these; Direct mode covers that with no setup.
 class ServerDialog extends StatefulWidget {
-  const ServerDialog({super.key, this.existing, this.initialKind});
+  const ServerDialog({super.key, this.existing});
 
   final ServerProfile? existing;
-  final ServerKind? initialKind;
 
-  static Future<ServerProfile?> show(
-    BuildContext context, {
-    ServerProfile? existing,
-    ServerKind? initialKind,
-  }) {
+  static Future<ServerProfile?> show(BuildContext context, {ServerProfile? existing}) {
     return showDialog<ServerProfile>(
       context: context,
-      builder: (context) => ServerDialog(existing: existing, initialKind: initialKind),
+      builder: (context) => ServerDialog(existing: existing),
     );
   }
 
@@ -30,18 +26,14 @@ class _ServerDialogState extends State<ServerDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _hostController;
   late final TextEditingController _portController;
-  late ServerKind _kind;
   late bool _useTls;
 
   @override
   void initState() {
     super.initState();
     final existing = widget.existing;
-    _kind = existing?.kind ?? widget.initialKind ?? ServerKind.remote;
     _nameController = TextEditingController(text: existing?.name ?? '');
-    _hostController = TextEditingController(
-      text: existing?.host ?? (_kind == ServerKind.local ? 'localhost' : ''),
-    );
+    _hostController = TextEditingController(text: existing?.host ?? '');
     _portController = TextEditingController(text: (existing?.port ?? 8266).toString());
     _useTls = existing?.useTls ?? false;
   }
@@ -59,7 +51,7 @@ class _ServerDialogState extends State<ServerDialog> {
     final isEditing = widget.existing != null;
 
     return AlertDialog(
-      title: Text(isEditing ? 'Edit server' : 'Add server'),
+      title: Text(isEditing ? 'Edit server' : 'Add remote server'),
       content: Form(
         key: _formKey,
         child: SizedBox(
@@ -68,30 +60,6 @@ class _ServerDialogState extends State<ServerDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SegmentedButton<ServerKind>(
-                segments: const [
-                  ButtonSegment(
-                    value: ServerKind.local,
-                    label: Text('This computer'),
-                    icon: Icon(Icons.computer),
-                  ),
-                  ButtonSegment(
-                    value: ServerKind.remote,
-                    label: Text('Remote / friend\'s server'),
-                    icon: Icon(Icons.dns),
-                  ),
-                ],
-                selected: {_kind},
-                onSelectionChanged: (selection) {
-                  setState(() {
-                    _kind = selection.first;
-                    if (_kind == ServerKind.local && _hostController.text.isEmpty) {
-                      _hostController.text = 'localhost';
-                    }
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -110,7 +78,6 @@ class _ServerDialogState extends State<ServerDialog> {
                     flex: 3,
                     child: TextFormField(
                       controller: _hostController,
-                      enabled: _kind == ServerKind.remote,
                       decoration: const InputDecoration(
                         labelText: 'Host / address',
                         border: OutlineInputBorder(),
@@ -141,15 +108,13 @@ class _ServerDialogState extends State<ServerDialog> {
                   ),
                 ],
               ),
-              if (_kind == ServerKind.remote) ...[
-                const SizedBox(height: 4),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Use HTTPS'),
-                  value: _useTls,
-                  onChanged: (value) => setState(() => _useTls = value),
-                ),
-              ],
+              const SizedBox(height: 4),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Use HTTPS'),
+                value: _useTls,
+                onChanged: (value) => setState(() => _useTls = value),
+              ),
             ],
           ),
         ),
@@ -165,7 +130,6 @@ class _ServerDialogState extends State<ServerDialog> {
             final profile = ServerProfile(
               id: widget.existing?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
               name: _nameController.text.trim(),
-              kind: _kind,
               host: _hostController.text.trim(),
               port: int.parse(_portController.text.trim()),
               useTls: _useTls,

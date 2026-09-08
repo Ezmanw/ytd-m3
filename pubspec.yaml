@@ -41,6 +41,10 @@ dependencies:
   provider: ^6.1.2
   # Persist theme, server list, and legal-warning preference.
   shared_preferences: ^2.3.2
+  # Talks to the remote download server's HTTP API.
+  http: ^1.2.2
+  # Resolves this computer's Downloads folder for the "open folder" action.
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
